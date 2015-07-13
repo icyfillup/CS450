@@ -1,167 +1,208 @@
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <GL/glut.h>
+//Computer Graphics Lab : Drawing an object and changing world view
 
-GLenum doubleBuffer;
-GLubyte ubImage[65536];
+#include <windows.h>
+#include <math.h>	// included for random number generation
+#include <gl/Gl.h>
+#include <gl/glut.h>
+#include <iostream>
 
-static void
-Init(void)
+const int screenWidth = 500;
+const int screenHeight = 500;
+const float pi = 3.1415;
+float pointSize = 4.0;
+int radius, height, width;
+float centerx = 0;
+float centery = 0;
+bool drawCircle, loop;
+void setWindow(float left, float right, float bottom, float top);
+// left, right, bottom, top
+float lt, rt, bt, tp;
+
+void myInit(void)
 {
-    int j;
-    GLubyte *img;
-    GLsizei imgWidth = 128;
+	glClearColor(1.0, 1.0, 1.0, 0.0);       // background color is white
+	glColor3f(0.0f, 0.0f, 0.0f);   // drawing color is black
+	glPointSize(pointSize);
+	glMatrixMode(GL_PROJECTION); 	   // set "camera shape"
+	glLoadIdentity();
+	lt = 0;
+	rt = screenWidth;
+	tp = screenHeight;
+	bt = 0;
+	centerx = screenWidth / 2;
+	centery = screenHeight / 2;
+	loop = true;
+	/*lt = -10;
+	rt = 10;
+	bt = -10;
+	tp = 10;*/
+	//	gluOrtho2D(lt, rt, bt, tp);	// set the world window
+	gluOrtho2D(0.0, screenWidth, 0.0, screenHeight);
+}
+void myKeyboard(unsigned char theKey, int mouseX, int mouseY)
+{
+	float zoomfactor = 2;
+	switch(theKey)
+	{
+		case 'z':
+			// zoom-in
+			std::cout << "zoom-in" << std::endl;
+			lt += 1;
+			rt -= 1;
+			tp -= 1;
+			bt += 1;
+			break;
+		case 'Z':
+			// zoom-out
+			std::cout << "zoom-out" << std::endl;
+			lt -= 1;
+			rt += 1;
+			tp += 1;
+			bt -= 1;
+			break;
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(60.0, 1.0, 0.1, 1000.0);
-    glMatrixMode(GL_MODELVIEW);
-    glDisable(GL_DITHER);
+		case 'T':
+		case 't':
+			loop = !loop;
+			break;
 
-    /* Create image */
-    img = ubImage;
-    for (j = 0; j < 32 * imgWidth; j++) {
-        *img++ = 0xff;
-        *img++ = 0x00;
-        *img++ = 0x00;
-        *img++ = 0xff;
-    }
-    for (j = 0; j < 32 * imgWidth; j++) {
-        *img++ = 0xff;
-        *img++ = 0x00;
-        *img++ = 0xff;
-        *img++ = 0x00;
-    }
-    for (j = 0; j < 32 * imgWidth; j++) {
-        *img++ = 0xff;
-        *img++ = 0xff;
-        *img++ = 0x00;
-        *img++ = 0x00;
-    }
-    for (j = 0; j < 32 * imgWidth; j++) {
-        *img++ = 0x00;
-        *img++ = 0xff;
-        *img++ = 0x00;
-        *img++ = 0xff;
-    }
+		case '+':
+			radius += 5;
+			height += 5;
+			width += 5;
+			break;
+
+		case '-':
+			radius -= 5;
+			height -= 5;
+			width -= 5;
+			break;
+
+		case 'b':
+		case 'B':
+			pointSize += 2.0f;
+			break;
+		default:
+			break;		      // do nothing
+	}
+	glutPostRedisplay(); // implicitly call myDisplay
 }
 
-/* ARGSUSED1 */
-static void
-Key(unsigned char key, int x, int y)
+void mySpecialKeyboard(int theKey, int mouseX, int mouseY)
 {
-    switch (key) {
-        case 27:
-            exit(0);
-    }
+	switch(theKey)
+	{
+		case GLUT_KEY_UP:
+			// move the object to the top in a small amount
+			tp -= 1;
+			bt -= 1;
+			break;
+		case GLUT_KEY_DOWN:
+			// move the object to the bottom in a small amount
+			tp += 1;
+			bt += 1;
+			break;
+		case GLUT_KEY_LEFT:
+			// move the object to the left in a small amount
+			lt += 1;
+			rt += 1;
+			break;
+		case GLUT_KEY_RIGHT:
+			// move the object to the right in a small amount
+			lt -= 1;
+			rt -= 1;
+			break;
+		default:
+			break;		      // do nothing
+	}
+
+	glutPostRedisplay(); // implicitly call myDisplay
 }
 
-void
-TexFunc(void)
+//<<<<<<<<<<<<<<<<<<<<<<<< myDisplay >>>>>>>>>>>>>>>>>
+void myDisplay(void)
 {
-    glEnable(GL_TEXTURE_2D);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+	glClear(GL_COLOR_BUFFER_BIT);     // clear the screen
+	setWindow(lt, rt, bt, tp);
+	if(loop)glBegin(GL_LINE_LOOP);
+	else glBegin(GL_POINTS);
+	glPointSize(pointSize);
+	//	glBegin(GL_POINTS);
+	// draw a shape
 
-#if GL_EXT_abgr
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, 128, 128, 0, GL_ABGR_EXT,
-                 GL_UNSIGNED_BYTE, ubImage);
+	if(drawCircle)
+	{
+		for(float t = 0; t < 1; t += .001)
+		{
+			float x = centerx + radius*cos(2 * pi*t);
+			float y = centery + radius*sin(2 * pi*t);
+			glVertex2f(x, y);
+		}
+	}
+	else
+	{
+		for(float t = 0; t < 1; t += .001)
+		{
+			float x = centerx + width*cos(2 * pi*t);
+			float y = centery + height*sin(2 * pi*t);
+			glVertex2f(x, y);
+		}
+	}
 
-    glBegin(GL_POLYGON);
-    glTexCoord2f(1.0, 1.0);
-    glVertex3f(-0.2, 0.8, -100.0);
-    glTexCoord2f(0.0, 1.0);
-    glVertex3f(-0.8, 0.8, -2.0);
-    glTexCoord2f(0.0, 0.0);
-    glVertex3f(-0.8, 0.2, -2.0);
-    glTexCoord2f(1.0, 0.0);
-    glVertex3f(-0.2, 0.2, -100.0);
-    glEnd();
-#endif
-
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, 128, 128, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, ubImage);
-
-    glBegin(GL_POLYGON);
-    glTexCoord2f(1.0, 1.0);
-    glVertex3f(0.8, 0.8, -2.0);
-    glTexCoord2f(0.0, 1.0);
-    glVertex3f(0.2, 0.8, -100.0);
-    glTexCoord2f(0.0, 0.0);
-    glVertex3f(0.2, 0.2, -100.0);
-    glTexCoord2f(1.0, 0.0);
-    glVertex3f(0.8, 0.2, -2.0);
-    glEnd();
-
-    glDisable(GL_TEXTURE_2D);
+	glEnd();
+	//	setWindow(lt, rt, bt, tp);
+	//glFlush();
+	glutSwapBuffers();
 }
 
-static void
-Draw(void)
+
+//--------------- setWindow ---------------------
+void setWindow(float left, float right, float bottom, float top)
 {
-
-    glClearColor(0.0, 0.0, 0.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-#if GL_EXT_abgr
-    glRasterPos3f(-0.8, -0.8, -1.5);
-    glDrawPixels(128, 128, GL_ABGR_EXT, GL_UNSIGNED_BYTE, ubImage);
-#endif
-
-    glRasterPos3f(0.2, -0.8, -1.5);
-    glDrawPixels(128, 128, GL_RGBA, GL_UNSIGNED_BYTE, ubImage);
-
-    TexFunc();
-
-    if (doubleBuffer) {
-        glutSwapBuffers();
-    } else {
-        glFlush();
-    }
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(left, right, bottom, top);
 }
 
-static void
-Args(int argc, char **argv)
+//<<<<<<<<<<<<<<<<<<<<<<<< main >>>>>>>>>>>>>>>>>>>>>>
+void main(int argc, char** argv)
 {
-    GLint i;
+	std::cout << "1. Drawing a circle\n" << "2. Drawing an ellipse\n" << "Choose 1 or 2: ";
+	int choice;
+	std::cin >> choice;
+	if(choice == 1)
+	{
+		drawCircle = true;
+		std::cout << "Enter a radius or the circle: ";
+		std::cin >> radius;
 
-    doubleBuffer = GL_TRUE;
+	}
+	else if(choice == 2)
+	{
+		drawCircle = false;
+		std::cout << "Enter a height: ";
+		std::cin >> height;
+		std::cout << "\nEnter a width: ";
+		std::cin >> width;
+	}
+	else
+	{
+		std::cout << "Invalid input.. program will now exit";
+		std::exit(1);
+	}
 
-    for (i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-sb") == 0) {
-            doubleBuffer = GL_FALSE;
-        } else if (strcmp(argv[i], "-db") == 0) {
-            doubleBuffer = GL_TRUE;
-        }
-    }
-}
+	glutInit(&argc, argv);          // initialize the toolkit
+	//glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB); // set display mode
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB); // set display mode
+	glutInitWindowSize(screenWidth, screenHeight); // set window size
+	glutInitWindowPosition(100, 150); // set window position on screen
+	glutCreateWindow("Computer Graphics - Lab"); // open the screen window
 
-int
-main(int argc, char **argv)
-{
-    GLenum type;
+	glutDisplayFunc(myDisplay);     // register redraw function
+	glutKeyboardFunc(myKeyboard);
+	glutSpecialFunc(mySpecialKeyboard);
 
-    glutInit(&argc, argv);
-    Args(argc, argv);
+	myInit();
 
-    type = GLUT_RGB;
-    type |= (doubleBuffer) ? GLUT_DOUBLE : GLUT_SINGLE;
-    glutInitDisplayMode(type);
-    glutCreateWindow("ABGR extension");
-    if (!glutExtensionSupported("GL_EXT_abgr")) {
-        printf("Couldn't find abgr extension.\n");
-        exit(0);
-    }
-#if !GL_EXT_abgr
-    printf("WARNING: client-side OpenGL has no ABGR extension support!\n");
-    printf("         Drawing only RGBA (and not ABGR) images and textures.\n");
-#endif
-    Init();
-    glutKeyboardFunc(Key);
-    glutDisplayFunc(Draw);
-    glutMainLoop();
-    return 0;             /* ANSI C requires main to return int. */
+	glutMainLoop(); 		     // go into a perpetual loop
 }
