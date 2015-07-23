@@ -94,7 +94,7 @@ void myIdle()
     
     
     glutPostRedisplay();
-}
+
 
 
 //<<<<<<<<<<<<<<<<<<<<<<<< myDisplay >>>>>>>>>>>>>>>>>
