@@ -12,18 +12,20 @@
 #define DEBUG 0
 #define debugPrint(word) (std::cout << (word) << std::endl)
 
+#include <math.h>   // included for random number generation
+#include <ctime>
+#include <iostream>
 
 // world corners: left, right, bottom, top
-float lt, rt, bt, tp;
 
 struct GLfloatPoint2D
 {
-    GLfloat x, y;
+    float x, y;
 };
 
 struct GLfloatColor3f
 {
-    GLfloat r, g, b;
+    float r, g, b;
 };
 
 #endif

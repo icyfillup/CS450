@@ -1,38 +1,26 @@
 #include <windows.h>
-#include <math.h>   // included for random number generation
-#include <ctime>
 #include <gl/Gl.h>
 #include <gl/glut.h>
-#include <iostream>
+#include <vector>
 
 #include "settings.h"
- 
-GLfloatPoint2D ballPosition;
-GLfloatColor3f ballColor;
-GLfloatPoint2D ballSpeed;
+#include "Ball.h"
 
-float speedScalar;
+float lt, rt, bt, tp;
 
-float radius;
-
-bool fillToggle;
-bool stopBall;
+std::vector<Ball> balls;
 
 void setWindow(float left, float right, float bottom, float top);
-void setColor3f(GLfloatColor3f&);
-void resetBall(void);
-void setRandomVecterSpeed2f(GLfloatPoint2D&);
 
 void myInit(void)
 {
-    
+    balls.push_back(Ball());
+        
     lt = -WORLD_WIDTH / 2;
     rt = WORLD_WIDTH / 2;
     bt = -WORLD_HEIGHT / 2;
     tp = WORLD_HEIGHT / 2;
 
-    resetBall();
-    
     glClearColor(1.0, 1.0, 1.0, 0.0);       // background color is white
     glColor3f(0.0f, 0.0f, 0.0f);         // drawing color is black
     glMatrixMode(GL_PROJECTION);       // set "camera shape"
@@ -49,7 +37,8 @@ void myKeyboard(unsigned char theKey, int mouseX, int mouseY)
             #if DEBUG
             debugPrint("a");
             #endif
-            
+
+            balls.push_back(Ball());            
         }break;
         
         case 'r':
@@ -57,7 +46,10 @@ void myKeyboard(unsigned char theKey, int mouseX, int mouseY)
             #if DEBUG
             debugPrint("r");
             #endif
-            
+
+            if(balls.size() > 1)
+                balls.pop_back();
+                
         }break;
 
         case 's':
@@ -66,7 +58,8 @@ void myKeyboard(unsigned char theKey, int mouseX, int mouseY)
             debugPrint("s");
             #endif
 
-            stopBall = !stopBall;
+            for(unsigned int i = 0; i < balls.size(); i++)
+                balls[i].toggleMovement();
         }break;
 
         case 'n':
@@ -75,7 +68,10 @@ void myKeyboard(unsigned char theKey, int mouseX, int mouseY)
             debugPrint("n");
             #endif
 
-            resetBall();
+            int size = balls.size() - 1;
+            for(unsigned int i = 0; i < size; i++)
+                balls.pop_back();
+            balls[0].resetBall();
         }break;
         
         case 'q':
@@ -93,7 +89,7 @@ void myKeyboard(unsigned char theKey, int mouseX, int mouseY)
             debugPrint("p");
             #endif
 
-            fillToggle = !fillToggle;
+            balls[0].toggleFill();
         }break;
         
         default:
@@ -102,59 +98,29 @@ void myKeyboard(unsigned char theKey, int mouseX, int mouseY)
     glutPostRedisplay(); // implicitly call myDisplay
 }
 
+
 void mySpecialKeyboard(int theKey, int mouseX, int mouseY)
 {
     switch(theKey)
     {
         case GLUT_KEY_PAGE_UP:
         {//TODO(philip): increment the radius of the first ball
-
-            radius += 0.02f;
-
-#if DEBUG
-            debugPrint("GLUT_KEY_PAGE_UP");
-#endif
-
-            
+            balls[0].increaseRadius();
         }break;
 
         case GLUT_KEY_PAGE_DOWN:
         {//TODO(philip): decrement the radius of the first ball
-
-            radius = (radius > 0) ? radius -= 0.02f  : 0.0f;
-
-#if DEBUG
-            debugPrint("GLUT_KEY_PAGE_DOWN");
-#endif
-
+            balls[0].decreaseRadius();
         }break;
         
         case GLUT_KEY_UP:
         {//TODO(philip): increase the speed of the first ball
-
-            speedScalar += 0.02f;
-            
-#if DEBUG
-            debugPrint("GLUT_KEY_UP");
-            debugPrint(speedScalar < 1);
-            debugPrint(speedScalar);
-            debugPrint("");            
-#endif
-            
+            balls[0].increaseSpeed();
         }break;
 
         case GLUT_KEY_DOWN:
         {//TODO(philip): decrease the speed of the first ball NOTE(philip): check when speedScalar is 0
-
-            speedScalar = (speedScalar > 0) ? speedScalar -= 0.02f  : 0.0f;
-
-#if DEBUG
-            debugPrint("GLUT_KEY_DOWN");
-            debugPrint(speedScalar > 0);
-            debugPrint(speedScalar);
-            debugPrint("");
-#endif
-            
+            balls[0].decreaseSpeed();
         }break;
       
         default:
@@ -170,20 +136,25 @@ void myDisplay(void)
     Sleep(1);
     glClear(GL_COLOR_BUFFER_BIT);     // clear the screen
 
-    glColor3f(ballColor.r, ballColor.g, ballColor.b);
-    
-    (fillToggle) ? glBegin(GL_POLYGON) : glBegin(GL_LINE_LOOP);
+    for(float i = 0; i < balls.size(); i++)
     {
-        for(float i = 0; i < 1; i += 0.01)
+        (balls[i].isFill()) ? glBegin(GL_POLYGON) : glBegin(GL_LINE_LOOP);
         {
-            float x = (radius * cos(i * (2 * PI))) + ballPosition.x;
-            float y = (radius * sin(i * (2 * PI))) + ballPosition.y;
+            GLfloatColor3f color = balls[i].getColor();
+            glColor3f(color.r, color.g, color.b);        
+        
+            GLfloatPoint2D pos = balls[i].getPosition();
+            for(float j = 0; j < 1; j += 0.01)
+            {
+       
+                float x = (balls[i].getRadius() * cos(j * (2 * PI))) + pos.x;
+                float y = (balls[i].getRadius() * sin(j * (2 * PI))) + pos.y;
 
-            glVertex2f(x, y);
+                glVertex2f(x, y);
+            }
         }
+        glEnd();
     }
-    glEnd();
-    
     //glFlush();
     glutSwapBuffers();
 }
@@ -191,23 +162,8 @@ void myDisplay(void)
 //--------------myIdle---------------------------
 void myIdle(void)
 {
-    if((ballPosition.x + radius) > rt ||
-       (ballPosition.x - radius) < lt)
-    {
-        ballSpeed.x = -ballSpeed.x;
-    }
-
-    if((ballPosition.y + radius) > tp ||
-       (ballPosition.y - radius) < bt)
-    {
-        ballSpeed.y = -ballSpeed.y;
-    }
-    
-    if(!stopBall)
-    {
-        ballPosition.x += ballSpeed.x * speedScalar;
-        ballPosition.y += ballSpeed.y * speedScalar;    
-    }
+    for(unsigned int i = 0; i < balls.size(); i++)
+        balls[i].update();
     
     glutPostRedisplay();
 }
@@ -218,41 +174,6 @@ void setWindow(float left, float right, float bottom, float top)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluOrtho2D(left, right, bottom, top);
-}
-
-void resetBall(void)
-{
-    fillToggle = true;
-    stopBall = false;
-    
-    ballPosition.x = 0;
-    ballPosition.y = 0;
-
-    radius = 2.5f;
-
-    setRandomVecterSpeed2f(ballSpeed);
-    speedScalar = 0.2;
-    
-    setColor3f(ballColor);
-}
-
-void setColor3f(GLfloatColor3f& color)
-{
-    color.r = (GLfloat)rand() / RAND_MAX;
-    color.g = (GLfloat)rand() / RAND_MAX;
-    color.b = (GLfloat)rand() / RAND_MAX;
-
-    #if DEBUG
-    debugPrint(color.r);
-    debugPrint(color.g);
-    debugPrint(color.b);
-    #endif
-}
-
-void setRandomVecterSpeed2f(GLfloatPoint2D& speed)
-{
-    speed.x = 2 * ((GLfloat)rand() / RAND_MAX) - 1;
-    speed.y = 2 * ((GLfloat)rand() / RAND_MAX) - 1;
 }
 
 //<<<<<<<<<<<<<<<<<<<<<<<< main >>>>>>>>>>>>>>>>>>>>>>
