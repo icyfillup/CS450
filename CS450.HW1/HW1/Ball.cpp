@@ -1,6 +1,11 @@
 #include "Ball.h"
 
-Ball::Ball(void)
+Ball::Ball(void) : ballPosition(GLfloatPoint2D{0, 0})
+{
+    resetBall();
+}
+
+Ball::Ball(GLfloatPoint2D pos) : ballPosition(pos)
 {
     resetBall();
 }
@@ -9,11 +14,8 @@ void Ball::resetBall(void)
 {
     fillToggle = true;
     stopBall = false;
-    
-    ballPosition.x = 0.0f;
-    ballPosition.y = 0.0f;
-
-    radius = 2.5f;
+ 
+    radius = RADIUS;
     speedScalar = 0.2f;
     
     setRandomVecterSpeed2f(ballSpeed);
@@ -42,6 +44,15 @@ void Ball::setRandomVecterSpeed2f(GLfloatPoint2D& speed)
     debugPrint(speed.x);
     debugPrint(speed.y);
     #endif
+}
+
+void Ball::toggleMovement(void)
+{
+    stopBall = !stopBall;
+
+    (stopBall) ?
+        ballSpeed.x = ballSpeed.y = 0 :
+        setRandomVecterSpeed2f(ballSpeed);
 }
 
 void Ball::update(void)
@@ -78,6 +89,5 @@ void Ball::update(void)
     
     ballPosition.x = tempX;
     ballPosition.y = tempY;
-
 }
 

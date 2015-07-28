@@ -9,6 +9,8 @@
 
 #define PI 3.141592f
 
+#define RADIUS 2.5f
+
 #define DEBUG 0
 #define debugPrint(word) (std::cout << (word) << std::endl)
 

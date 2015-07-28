@@ -11,6 +11,7 @@ float lt, rt, bt, tp;
 std::vector<Ball> balls;
 
 void setWindow(float left, float right, float bottom, float top);
+GLfloatPoint2D getRandomPosition2f(void);
 
 void myInit(void)
 {
@@ -37,8 +38,10 @@ void myKeyboard(unsigned char theKey, int mouseX, int mouseY)
             #if DEBUG
             debugPrint("a");
             #endif
-
-            balls.push_back(Ball());            
+            if(balls.size() < 128)
+                balls.push_back(Ball(getRandomPosition2f()));
+            else
+                std::cout << "adding too much ball onto the window" << std::endl;
         }break;
         
         case 'r':
@@ -68,10 +71,8 @@ void myKeyboard(unsigned char theKey, int mouseX, int mouseY)
             debugPrint("n");
             #endif
 
-            int size = balls.size() - 1;
-            for(unsigned int i = 0; i < size; i++)
-                balls.pop_back();
-            balls[0].resetBall();
+            balls.clear();
+            balls.push_back(Ball());
         }break;
         
         case 'q':
@@ -97,7 +98,6 @@ void myKeyboard(unsigned char theKey, int mouseX, int mouseY)
     }
     glutPostRedisplay(); // implicitly call myDisplay
 }
-
 
 void mySpecialKeyboard(int theKey, int mouseX, int mouseY)
 {
@@ -200,3 +200,44 @@ void main(int argc, char** argv)
 
     glutMainLoop();              // go into a perpetual loop
 }
+
+GLfloatPoint2D getRandomPosition2f(void)
+{
+    bool isPtTaken = false;
+    GLfloatPoint2D pos;    
+    
+    do
+    {
+        isPtTaken = false;
+
+        pos.x = (((float)rand() / RAND_MAX) * (WORLD_WIDTH - (2 * RADIUS))) + (RADIUS - (WORLD_WIDTH / 2));
+        pos.y = (((float)rand() / RAND_MAX) * (WORLD_HEIGHT - (2 * RADIUS))) + (RADIUS - (WORLD_HEIGHT / 2));
+
+        for(int i = 0; i < balls.size(); i++)
+        {
+            GLfloatPoint2D ballPosition = balls[i].getPosition();
+            GLfloatPoint2D distance{pos.x - ballPosition.x, pos.y - ballPosition.y};
+
+            float actualDistFromPts = (distance.x * distance.x) + (distance.y * distance.y);
+            float detectingDistFromPts = (RADIUS + balls[i].getRadius()) * (RADIUS + balls[i].getRadius());
+
+            if(actualDistFromPts <= detectingDistFromPts)
+            {
+                isPtTaken = true;
+                break;
+            }
+        }
+
+    }
+    while(isPtTaken);
+    
+        
+    #if DEBUG
+    debugPrint(pos.x);
+    debugPrint(pos.y);
+    debugPrint("");
+    #endif
+
+    return pos;
+}
+
