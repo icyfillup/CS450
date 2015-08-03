@@ -1,11 +1,11 @@
 #ifndef SETTING_H
 #define SETTING_H
 
-#define SCREEN_WIDTH 500
-#define SCREEN_HEIGHT 500
+#define SCREEN_WIDTH 500.f
+#define SCREEN_HEIGHT 500.f
 
-#define WORLD_WIDTH 100
-#define WORLD_HEIGHT 100
+#define WORLD_WIDTH 100.f
+#define WORLD_HEIGHT 100.f
 
 #define PI 3.141592f
 

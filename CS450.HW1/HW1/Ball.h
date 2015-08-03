@@ -15,15 +15,24 @@ public:
 
     inline void increaseRadius(void){radius += 0.02f;}
     inline void decreaseRadius(void){radius = ((radius - 0.02f) > 0) ? radius - 0.02f  : 0.0f;}
-    inline void increaseSpeed(void){speedScalar += 0.02f;}
-    inline void decreaseSpeed(void){speedScalar = ((speedScalar - 0.02f) > 0) ? speedScalar - 0.02f  : 0.0f;}
-
+    void increaseSpeed(void);
+    void decreaseSpeed(void);
+    
+    inline void setSpeed(GLfloatPoint2D newSpeed){ballSpeed = newSpeed;}
+    
     inline float getRadius(void){return radius;}
     void update(void);
+    void collidedWith(Ball&);
+    inline bool hasCollided(Ball& other){return hasCollided(other.getPosition(), other.getRadius());}
+    bool hasCollided(GLfloatPoint2D&, float);
 
+    inline bool hasBallStop(void){return stopBall;}
     inline bool isFill(void){return fillToggle;}
     inline GLfloatPoint2D getPosition(void){return ballPosition;}
+    inline GLfloatPoint2D getSpeed(void){return ballSpeed;}
     inline GLfloatColor3f getColor(void){return ballColor;}
+
+    inline void setMovement(void){stopBall = !stopBall;}
     
 private:
     GLfloatPoint2D ballPosition;

@@ -8,13 +8,24 @@
 
 float lt, rt, bt, tp;
 
+bool isMouseOnBall;
+bool isMouseDown;
+Ball *mouseOnBall;
+
 std::vector<Ball> balls;
 
 void setWindow(float left, float right, float bottom, float top);
 GLfloatPoint2D getRandomPosition2f(void);
+GLfloatPoint2D screenToWorldPos(GLfloatPoint2D& currentScreenPos,
+                                GLfloatPoint2D& screenCornerPos,
+                                GLfloatPoint2D& worldCornerPos);
+
 
 void myInit(void)
 {
+    isMouseDown = false;
+    isMouseOnBall = false;
+    
     balls.push_back(Ball());
         
     lt = -WORLD_WIDTH / 2;
@@ -27,6 +38,39 @@ void myInit(void)
     glMatrixMode(GL_PROJECTION);       // set "camera shape"
     glLoadIdentity();
     gluOrtho2D(lt, rt, bt, tp); // set the world window
+}
+
+void myMouse(int button, int state, int x, int y)
+{
+    if(button != GLUT_LEFT_BUTTON) return;
+    
+    if(state == GLUT_DOWN)
+    {
+        GLfloatPoint2D worldPos = screenToWorldPos(GLfloatPoint2D{x, SCREEN_HEIGHT - y}, GLfloatPoint2D{0, 0}, GLfloatPoint2D{lt, bt});
+
+        for(int i = 0; i < balls.size(); i++)
+        {
+            if(balls[i].hasCollided(worldPos, 0) && balls[i].hasBallStop())
+            {
+                mouseOnBall = &balls[i];
+                isMouseDown = true;
+                break;
+            }
+        }
+    }
+    else if(state == GLUT_UP && isMouseDown)
+    {
+        isMouseDown = false;
+        GLfloatPoint2D lastWorldPos = screenToWorldPos(GLfloatPoint2D{x, SCREEN_HEIGHT - y}, GLfloatPoint2D{0, 0}, GLfloatPoint2D{lt, bt});
+
+        GLfloatPoint2D newSpeed{lastWorldPos.x - mouseOnBall->getPosition().x, lastWorldPos.y - mouseOnBall->getPosition().y};
+
+        newSpeed.x *= (2.0f / WORLD_WIDTH);
+        newSpeed.y *= (2.0f / WORLD_HEIGHT);
+
+        mouseOnBall->setSpeed(newSpeed);
+        mouseOnBall->setMovement();
+    }
 }
 
 void myKeyboard(unsigned char theKey, int mouseX, int mouseY)
@@ -161,10 +205,18 @@ void myDisplay(void)
 
 //--------------myIdle---------------------------
 void myIdle(void)
-{
+{    
     for(unsigned int i = 0; i < balls.size(); i++)
         balls[i].update();
-    
+
+    for(int i = 0; i < balls.size() - 1; i++)
+    {
+        for(int j = i + 1; j < balls.size(); j++)
+        {
+            balls[i].collidedWith(balls[j]);
+        }
+    }
+
     glutPostRedisplay();
 }
 
@@ -195,6 +247,7 @@ void main(int argc, char** argv)
 
     glutKeyboardFunc(myKeyboard);
     glutSpecialFunc(mySpecialKeyboard);
+    glutMouseFunc(myMouse);
 
     myInit();
 
@@ -215,13 +268,7 @@ GLfloatPoint2D getRandomPosition2f(void)
 
         for(int i = 0; i < balls.size(); i++)
         {
-            GLfloatPoint2D ballPosition = balls[i].getPosition();
-            GLfloatPoint2D distance{pos.x - ballPosition.x, pos.y - ballPosition.y};
-
-            float actualDistFromPts = (distance.x * distance.x) + (distance.y * distance.y);
-            float detectingDistFromPts = (RADIUS + balls[i].getRadius()) * (RADIUS + balls[i].getRadius());
-
-            if(actualDistFromPts <= detectingDistFromPts)
+            if(balls[i].hasCollided(pos, RADIUS))
             {
                 isPtTaken = true;
                 break;
@@ -241,3 +288,12 @@ GLfloatPoint2D getRandomPosition2f(void)
     return pos;
 }
 
+GLfloatPoint2D screenToWorldPos(GLfloatPoint2D& currentScreenPos,
+                                GLfloatPoint2D& screenCornerPos,
+                                GLfloatPoint2D& worldCornerPos)
+{
+    float x = ((WORLD_WIDTH / SCREEN_WIDTH) * (currentScreenPos.x - screenCornerPos.x)) + worldCornerPos.x;
+    float y = ((WORLD_HEIGHT / SCREEN_HEIGHT) * (currentScreenPos.y - screenCornerPos.y)) + worldCornerPos.y;
+
+    return GLfloatPoint2D{x, y};
+}
