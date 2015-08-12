@@ -10,15 +10,9 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="CS450-Lab5.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="CS450-Lab5.h" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{914C5136-2F07-4E92-9B02-53AF08445289}</ProjectGuid>
-    <RootNamespace>Demo</RootNamespace>
+    <ProjectGuid>{54CB9889-D9D7-436B-A059-A9740CDA18E2}</ProjectGuid>
+    <RootNamespace>Lab5</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -47,8 +41,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)bin\$(Configuration)\Intermediate\</IntDir>
-    <IncludePath>$(SolutionDir)deps\GLUT\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)deps\GLUT\lib;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>$(ExecutablePath)</ExecutablePath>
+    <IncludePath>$(SolutionDir)..\deps\GLUT\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\deps\GLUT\lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -75,6 +70,12 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="CS450-Lab5.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CS450-Lab5.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
