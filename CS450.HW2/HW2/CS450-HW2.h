@@ -4,9 +4,17 @@
 
 #define PI 3.1415
 
-struct GLfloatPoint3f
+union  GLfloatPoint3f
 {
-    GLfloat x, y, z;
+    struct
+    {
+        GLfloat x, y, z;
+    };
+    struct
+    {
+        GLfloat width, height, length;
+    };
+    GLfloat pos[3];
 };
 
 
