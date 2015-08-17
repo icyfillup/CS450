@@ -68,6 +68,16 @@ float lower_finger_height;
 GLfloatPoint3f fingerNail_pos[4];
 float fingerNail_radius;
 
+//thumb knuckle
+GLfloatPoint3f thumb_knuckle_joint_pos;
+float thumb_knuckle_joint_rotate_z;
+float thumb_knuckle_joint_radius;
+
+//upper thumb
+GLfloatPoint3f upper_thumb_pos;
+float upper_thumb_radius;
+float upper_thumb_height;
+
 
 void myInit(int shadingChoice, int colorChoice)
 {
@@ -145,6 +155,25 @@ void myInit(int shadingChoice, int colorChoice)
     {
         fingerNail_pos[i] = GLfloatPoint3f{0, 0, lower_finger_height};
     }
+    
+    //thumb - knuckles
+    knuckle_joint_radius = (hand_dim.width / 2) * 0.25;
+    for(int i = 0; i < 4; i++)
+    {
+        knuckle_joint_pos[i] = GLfloatPoint3f{(hand_dim.width / 2) * (0.75 - (0.50 * i)), 0, (hand_dim.length / 2) * 0.75};
+        knuckle_joint_rotate_x[i] = 0.0f;
+    }
+
+    //thumb - knuckles
+    thumb_knuckle_joint_radius = (hand_dim.width / 2) * 0.25;
+    thumb_knuckle_joint_pos = GLfloatPoint3f{(-hand_dim.width / 2) * 0.75, 0, (-hand_dim.length / 2) / 2};
+    thumb_knuckle_joint_rotate_z = 0.0f;
+    
+    //upper thumb
+    upper_thumb_radius = thumb_knuckle_joint_radius * 0.8;
+    upper_thumb_height = hand_dim.length / 4;
+    upper_thumb_pos = GLfloatPoint3f{0, 0, 0};
+
 
     
     glEnable(GL_LIGHTING);
@@ -287,7 +316,6 @@ void drawFingers()
         gluQuadricDrawStyle(qobj, GLU_FILL);
         gluCylinder(qobj, upper_finger_radius, upper_finger_radius, upper_finger_height, 20, 10);        
 
-        
         glTranslatef(middle_knuckle_joint_pos[i].x, middle_knuckle_joint_pos[i].y, middle_knuckle_joint_pos[i].z);
         glRotatef(middle_knuckle_joint_rotate_x[i], 1, 0, 0);
         glutSolidSphere(middle_knuckle_joint_radius, 20, 8);
@@ -303,11 +331,26 @@ void drawFingers()
         
         glPopMatrix();
     }
-}
 
 void DEBUG_drawLine()
 {
-    //glTranslatef(0, 0, 0);
+    glTranslatef(thumb_knuckle_joint_pos.x, thumb_knuckle_joint_pos.y, thumb_knuckle_joint_pos.z);
+    glRotatef(knuckle_joint_rotate_x[1], 0, 0, 1);
+    glutSolidSphere(thumb_knuckle_joint_radius, 20, 8);
+
+        
+    glTranslatef(upper_thumb_pos.x, upper_thumb_pos.y, upper_thumb_pos.z);
+    GLUquadricObj *qobj = gluNewQuadric();
+    gluQuadricDrawStyle(qobj, GLU_FILL);
+    gluCylinder(qobj, upper_thumb_radius, upper_thumb_radius, 1, 20, 10);        
+            
+
+    
+}    
+
+void DEBUG_drawLine()
+{
+    glTranslatef(thumb_knuckle_joint_pos.x, thumb_knuckle_joint_pos.y, thumb_knuckle_joint_pos.z);
     glRotatef(270, 1, 0, 0);
     GLUquadricObj *qobj = gluNewQuadric();
     gluQuadricDrawStyle(qobj, GLU_FILL);
@@ -335,6 +378,7 @@ void displaySolarSystem()
     drawWristJoint();
     drawHand();
     drawFingers();
+    //DEBUG_drawLine();
     
     glutSwapBuffers();
 }
