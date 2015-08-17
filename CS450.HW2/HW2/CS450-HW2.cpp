@@ -307,14 +307,7 @@ void drawFingers()
 
 void DEBUG_drawLine()
 {
-    float knuckle_joint_radius = (hand_dim.width / 2) * 0.25;
-    
-    //GLfloatPoint3f knuckle1_pos = GLfloatPoint3f{(hand_dim.width / 2) * 0.75, 0, (hand_dim.length / 2) * 0.75};
-    //GLfloatPoint3f knuckle1_pos = GLfloatPoint3f{(hand_dim.width / 2) * 0.25, 0, (hand_dim.length / 2) * 0.75};
-    //GLfloatPoint3f knuckle1_pos = GLfloatPoint3f{(hand_dim.width / 2) * -0.25, 0, (hand_dim.length / 2) * 0.75};
-    //GLfloatPoint3f knuckle1_pos = GLfloatPoint3f{(hand_dim.width / 2) * -0.75, 0, (hand_dim.length / 2) * 0.75};
-
-    //glTranslatef(knuckles1_pos.x, knuckles1_pos.y, knuckles1_pos.z);
+    //glTranslatef(0, 0, 0);
     glRotatef(270, 1, 0, 0);
     GLUquadricObj *qobj = gluNewQuadric();
     gluQuadricDrawStyle(qobj, GLU_FILL);
