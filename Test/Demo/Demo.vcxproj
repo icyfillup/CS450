@@ -11,10 +11,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CS450-Lab5.cpp" />
+    <ClCompile Include="hw2.cpp" />
+    <ClCompile Include="robot_arm.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CS450-Lab5.h" />
+    <ClInclude Include="hw2.h" />
+    <ClInclude Include="robot_arm.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{914C5136-2F07-4E92-9B02-53AF08445289}</ProjectGuid>

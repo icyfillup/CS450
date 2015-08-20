@@ -15,12 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CS450-Lab5.cpp">
+    <ClCompile Include="hw2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="robot_arm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CS450-Lab5.h">
+    <ClInclude Include="hw2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="robot_arm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
